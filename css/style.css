@@ -1487,16 +1487,21 @@ input, textarea {
 }
 
 .empty-state {
+  /* 跨满 grid 整行（不论父容器是 card-grid 还是 card-grid-2col） */
+  grid-column: 1 / -1;
   text-align: center;
   padding: 80px 20px;
   color: var(--text-tertiary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .empty-state-icon {
   font-size: 56px;
   margin-bottom: 12px;
   opacity: 0.5;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   width: 80px;
