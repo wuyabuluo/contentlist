@@ -29,3 +29,10 @@ pnpm-debug.log*
 
 # Vercel（自动生成的，不需要入库）
 .vercel
+
+# 凭据 / token / 笔记（绝不入库）
+*.txt
+*token*
+*secret*
+*credential*
+*password*
