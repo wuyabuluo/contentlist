@@ -164,10 +164,20 @@ input, textarea {
   gap: 6px;
   flex-shrink: 0;
   letter-spacing: -0.5px;
+  line-height: 1;
+  height: 32px;
 }
 
 .logo-icon {
   font-size: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  line-height: 1;
+  /* emoji 视觉中心微调（不同系统渲染略有差异） */
+  transform: translateY(-1px);
 }
 
 .nav-links {
