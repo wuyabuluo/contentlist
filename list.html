@@ -1,0 +1,340 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="version" content="1.0.1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+  <title>清单详情 · 清单</title>
+  <meta name="description" content="一个内容清单分享平台">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="清单详情">
+  <meta property="og:description" content="一个内容清单分享平台">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <main class="main">
+      <div class="container">
+
+        <div id="list-content">
+          <!-- 内容由 JS 注入 -->
+        </div>
+
+      </div>
+
+      <footer class="app-footer">
+        <div class="app-footer-inner">
+          <span>© 2026 清单</span>
+          <span class="app-footer-divider">·</span>
+          <a href="legal/agreement.html" target="_blank">用户协议</a>
+          <span class="app-footer-divider">·</span>
+          <a href="legal/privacy.html" target="_blank">隐私政策</a>
+          <span class="app-footer-divider">·</span>
+          <span class="app-footer-version">v1.0.1</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- 举报弹层 -->
+  <div id="report-modal" class="modal-mask" hidden>
+    <div class="modal-card modal-card--publish">
+      <div class="modal-header">
+        <h3>举报这个清单</h3>
+        <button class="modal-close" data-report-action="cancel" aria-label="关闭">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint">请选择举报原因</p>
+        <div id="report-reasons" class="list-options"></div>
+        <textarea
+          id="report-desc"
+          class="form-input form-textarea"
+          placeholder="补充说明（选填，200字以内）"
+          maxlength="200"
+          style="margin-top:12px"
+        ></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-report-action="cancel">取消</button>
+        <button class="btn btn-primary" data-report-action="submit">提交举报</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    renderNavbar();
+
+    const listId = getQueryParam('id');
+    const list = listId ? getListById(listId) : null;
+
+    if (!list) {
+      document.getElementById('list-content').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <div class="empty-state-text">没找到这个清单</div>
+          <a href="index.html" class="btn btn-primary">返回发现</a>
+        </div>
+      `;
+    } else {
+      renderListDetail(list);
+    }
+
+    function renderListDetail(list) {
+      const creator = list.anonymous ? null : getUserById(list.creatorId);
+      const items = list.itemIds.map(id => getItemById(id)).filter(Boolean);
+      const favorited = isFavorite(list.id);
+
+      // SEO: 动态设置 <title> 和 meta description
+      const seoTitle = list.title ? `${list.title} · 清单` : '清单详情 · 清单';
+      const seoDesc = list.description || `${list.title || '清单'} - ${items.length} 条精选内容 - 清单`;
+      document.title = seoTitle;
+      setMeta('description', seoDesc);
+      setMeta('og:title', list.title || '清单详情');
+      setMeta('og:description', seoDesc);
+
+      // 收藏数 = 基础数 + 本地是否收藏
+      const collectCount = list.collectCount + (favorited ? 1 : 0);
+
+      // 当前用户是否为创建者
+      const me = getCurrentUser();
+      const isOwner = me && list.creatorId === me.id;
+
+      const creatorHtml = list.anonymous
+        ? `<div class="list-detail-creator"><div class="user-avatar" style="background:#555">匿</div><span>匿名用户</span></div>`
+        : `<div class="list-detail-creator">
+             <div class="user-avatar" style="background:${creator.avatarColor}">${creator.avatar}</div>
+             <span>${escapeHtml(creator.name)}</span>
+           </div>`;
+
+      const html = `
+        <a href="index.html" style="color:var(--text-tertiary);font-size:13px;display:inline-block;margin-bottom:16px">‹ 返回发现</a>
+
+        <!-- 清单头部 -->
+        <div class="list-detail-header">
+          <div class="list-detail-cover" style="color:${list.coverColor}">
+            <span class="list-detail-cover-emoji">${list.coverEmoji}</span>
+          </div>
+          <div class="list-detail-info">
+            <span class="list-detail-tag">内容清单</span>
+            <h1 class="list-detail-title">${escapeHtml(list.title)}</h1>
+            <p class="list-detail-desc">${escapeHtml(list.description || '')}</p>
+            <div class="list-detail-meta">
+              ${creatorHtml}
+              <span>·</span>
+              <span>${list.createTime}</span>
+              <span>·</span>
+              <span>${items.length} 条内容</span>
+            </div>
+            <div class="list-detail-actions">
+              <button id="favorite-btn" class="btn ${favorited ? 'btn-primary' : 'btn-ghost'}">
+                <span>${favorited ? '★' : '☆'}</span>
+                <span>${favorited ? '已收藏' : '收藏清单'}</span>
+                <span>(${formatCount(collectCount)})</span>
+              </button>
+              <button class="btn btn-ghost" id="share-btn">分享清单</button>
+              ${isOwner ? `<button class="btn btn-ghost" id="list-edit-btn">✏️ 编辑清单</button>` : ''}
+              <button class="btn btn-ghost" id="report-btn">⚠️ 举报</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 清单内容列表 -->
+        <div class="list-detail-items">
+          <div class="section-title" style="font-size:18px;margin-bottom:16px">
+            全部内容
+            <span style="font-size:13px;color:var(--text-tertiary);font-weight:normal;margin-left:8px">
+              点击进入查看详情
+            </span>
+          </div>
+          ${items.map((item, i) => renderListItemRow(item, i, list.id)).join('')}
+        </div>
+      `;
+
+      document.getElementById('list-content').innerHTML = html;
+
+      // 绑定收藏按钮
+      document.getElementById('favorite-btn').addEventListener('click', () => {
+        if (!requireLogin(`list.html?id=${list.id}`)) return;
+        const nowFav = toggleFavorite(list.id);
+        showToast(nowFav ? '已收藏' : '已取消收藏', 'success');
+        // 重新渲染
+        setTimeout(() => renderListDetail(list), 200);
+      });
+
+      // 分享
+      document.getElementById('share-btn').addEventListener('click', async () => {
+        const url = window.location.href;
+        try {
+          await navigator.clipboard.writeText(url);
+          showToast('链接已复制到剪贴板', 'success');
+        } catch (e) {
+          showToast('复制失败，请手动复制地址栏', 'error');
+        }
+      });
+
+      // 举报
+      document.getElementById('report-btn').addEventListener('click', () => {
+        if (!requireLogin(`list.html?id=${list.id}`)) return;
+        openReportModal('list', list.id);
+      });
+
+      // 创建者"编辑"按钮
+      const editBtn = document.getElementById('list-edit-btn');
+      if (editBtn && isOwner) {
+        editBtn.addEventListener('click', () => {
+          // 复用 me.html 的弹层（通过跳转或共用组件）
+          // 简化：打开一个轻量编辑弹层
+          openListEditModal(list);
+        });
+      }
+    }
+
+    // ==================== 清单编辑弹层（list.html 轻量版）====================
+    function openListEditModal(list) {
+      const title = prompt('修改清单标题', list.title);
+      if (title === null) return; // 取消
+      const description = prompt('修改清单简介（取消则保留旧值）', list.description || '');
+      if (description === null) return; // 取消
+      const result = editUserList(list.id, {
+        title: title.trim(),
+        description: description.trim()
+      });
+      if (!result.ok) { showToast(result.error, 'error'); return; }
+      showToast('✓ 已保存', 'success');
+      // 重新渲染（用最新的 list）
+      renderListDetail(result.list);
+    }
+
+    // SEO: 动态设置 meta 标签（支持 name 和 property 两种）
+    function setMeta(key, content) {
+      const isProperty = key.startsWith('og:') || key.startsWith('twitter:');
+      const selector = isProperty
+        ? `meta[property="${key}"]`
+        : `meta[name="${key}"]`;
+      let el = document.querySelector(selector);
+      if (!el) {
+        el = document.createElement('meta');
+        if (isProperty) el.setAttribute('property', key);
+        else el.setAttribute('name', key);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', content);
+    }
+
+    // ==================== 举报弹层 ====================
+    const reportModal = document.getElementById('report-modal');
+    const reportReasonsEl = document.getElementById('report-reasons');
+    const reportDescEl = document.getElementById('report-desc');
+    let pendingReport = null;
+
+    const REPORT_REASONS = [
+      { value: 'spam', label: '垃圾广告', emoji: '📢' },
+      { value: 'porn', label: '色情低俗', emoji: '🔞' },
+      { value: 'fraud', label: '欺诈诱导', emoji: '⚠️' },
+      { value: 'infringement', label: '侵权搬运', emoji: '©️' },
+      { value: 'other', label: '其他原因', emoji: '💬' }
+    ];
+
+    function openReportModal(type, targetId) {
+      pendingReport = { type, targetId };
+      reportReasonsEl.innerHTML = REPORT_REASONS.map((r, i) => `
+        <label class="list-option">
+          <input type="radio" name="report-reason" value="${r.value}" ${i === 0 ? 'checked' : ''}>
+          <div class="list-option-body">
+            <div class="list-option-cover list-option-cover--default">${r.emoji}</div>
+            <div class="list-option-text">
+              <div class="list-option-title">${r.label}</div>
+            </div>
+          </div>
+        </label>
+      `).join('');
+      reportDescEl.value = '';
+      reportModal.hidden = false;
+    }
+
+    function closeReportModal() {
+      reportModal.hidden = true;
+      pendingReport = null;
+    }
+
+    function submitReport() {
+      if (!pendingReport) return;
+      const reason = reportModal.querySelector('input[name="report-reason"]:checked')?.value;
+      if (!reason) { showToast('请选择举报原因', 'error'); return; }
+      const user = getCurrentUser();
+      addReport({
+        type: pendingReport.type,
+        targetId: pendingReport.targetId,
+        reason,
+        description: reportDescEl.value.trim(),
+        reporterId: user.id
+      });
+      closeReportModal();
+      showToast('✓ 已提交，管理员会尽快处理', 'success');
+    }
+
+    reportModal.addEventListener('click', (e) => {
+      if (e.target === reportModal) closeReportModal();
+      const action = e.target.closest('[data-report-action]')?.dataset.reportAction;
+      if (action === 'cancel') closeReportModal();
+      if (action === 'submit') submitReport();
+    });
+
+    // ==================== 单条内容 drawer（弹层）====================
+    document.addEventListener('click', (e) => {
+      const row = e.target.closest('[data-open-item]');
+      if (row) {
+        e.preventDefault();
+        openItemDrawer(row.dataset.openItem);
+      }
+    });
+
+    // drawer 内部事件
+    document.addEventListener('click', async (e) => {
+      const drawer = e.target.closest('.item-drawer');
+      if (!drawer) return;
+      const actionEl = e.target.closest('[data-drawer-action]');
+      if (!actionEl) return;
+      const action = actionEl.dataset.drawerAction;
+      if (action === 'close' || action === 'mask') {
+        closeItemDrawer();
+      } else if (action === 'like') {
+        if (!requireLogin()) return;
+        const itemId = document.querySelector('[data-open-item]')?.dataset.openItem;
+        if (!itemId) return;
+        const nowLiked = toggleLike(itemId);
+        showToast(nowLiked ? '已点赞' : '已取消点赞', 'success');
+        // 刷新 drawer
+        const item = getItemById(itemId);
+        if (item) {
+          drawer.outerHTML = '<div id="item-drawer" class="item-drawer">' + renderItemDrawerHTML(item) + '</div>';
+        }
+      } else if (action === 'copy-list-link') {
+        // 复制当前清单的 URL
+        const url = window.location.href;
+        try {
+          await navigator.clipboard.writeText(url);
+          showToast('✓ 已复制清单链接', 'success');
+        } catch (e) {
+          // 降级：弹窗让用户手动复制
+          prompt('请手动复制链接：', url);
+        }
+        // 让按钮短暂变"已复制"状态
+        const btn = e.target.closest('[data-drawer-action="copy-list-link"]');
+        if (btn) {
+          const old = btn.textContent;
+          btn.textContent = '✓ 已复制';
+          btn.disabled = true;
+          setTimeout(() => { btn.textContent = old; btn.disabled = false; }, 1500);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+

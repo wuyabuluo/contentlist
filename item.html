@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="version" content="1.0.1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+  <title>内容详情 · 清单</title>
+  <meta name="description" content="一个内容清单分享平台">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="内容详情">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <main class="main">
+      <div class="container">
+
+        <div id="item-content">
+          <!-- 内容由 JS 注入 -->
+        </div>
+
+      </div>
+
+      <footer class="app-footer">
+        <div class="app-footer-inner">
+          <span>© 2026 清单</span>
+          <span class="app-footer-divider">·</span>
+          <a href="legal/agreement.html" target="_blank">用户协议</a>
+          <span class="app-footer-divider">·</span>
+          <a href="legal/privacy.html" target="_blank">隐私政策</a>
+          <span class="app-footer-divider">·</span>
+          <span class="app-footer-version">v1.0.1</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- 举报弹层 -->
+  <div id="report-modal" class="modal-mask" hidden>
+    <div class="modal-card modal-card--publish">
+      <div class="modal-header">
+        <h3>举报这条内容</h3>
+        <button class="modal-close" data-report-action="cancel" aria-label="关闭">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint">请选择举报原因</p>
+        <div id="report-reasons" class="list-options"></div>
+        <textarea
+          id="report-desc"
+          class="form-input form-textarea"
+          placeholder="补充说明（选填，200字以内）"
+          maxlength="200"
+          style="margin-top:12px"
+        ></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-report-action="cancel">取消</button>
+        <button class="btn btn-primary" data-report-action="submit">提交举报</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    renderNavbar();
+
+    const itemId = getQueryParam('id');
+    const item = itemId ? getItemById(itemId) : null;
+
+    if (!item) {
+      document.getElementById('item-content').innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state-icon">🔍</div>
+          <div class="empty-state-text">没找到这条内容</div>
+          <a href="index.html" class="btn btn-primary">返回发现</a>
+        </div>
+      `;
+    } else {
+      renderItemDetail(item);
+    }
+
+    function renderItemDetail(item) {
+      const platform = getPlatformInfo(item.platform);
+      const creator = getUserById(item.creatorId);
+      const liked = isLiked(item.id);
+      const likeCount = item.likeCount + (liked ? 1 : 0);
+
+      // SEO: 动态设置
+      const seoTitle = (item.intro || '内容详情') + ' · 清单';
+      const seoDesc = `${item.intro || '内容详情'} - 来自${platform.shortName} - 清单`;
+      document.title = seoTitle;
+      setItemMeta('description', seoDesc);
+      setItemMeta('og:title', item.intro || '内容详情');
+      setItemMeta('og:description', seoDesc);
+
+      // 找到包含此 item 的清单（用于返回）
+      const containingLists = getAllLists().filter(l => l.itemIds.includes(item.id));
+
+      const html = `
+        <a href="javascript:history.back()" style="color:var(--text-tertiary);font-size:13px;display:inline-block;margin-bottom:16px">‹ 返回</a>
+
+        <!-- 极简内容页：只做"链接跳板" -->
+        <div class="item-detail-card item-detail-card--minimal">
+          <div class="item-detail-platform-row">
+            <div class="item-detail-platform-icon ${item.platform}">${platform.icon}</div>
+            <span class="item-detail-platform-name ${item.platform}">${platform.name}</span>
+          </div>
+
+          <div class="item-detail-intro">${escapeHtml(item.intro)}</div>
+
+          <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener" class="item-detail-link">
+            <span class="item-detail-link-url">${escapeHtml(item.url)}</span>
+            <span class="item-detail-link-arrow">↗ 打开${escapeHtml(platform.shortName)}</span>
+          </a>
+
+          <div class="item-detail-meta item-detail-meta--minimal">
+            <div class="item-detail-creator">
+              <div class="user-avatar" style="background:${creator.avatarColor}">${creator.avatar}</div>
+              <div class="item-detail-creator-info">
+                <span class="item-detail-creator-name">${escapeHtml(creator.name)}</span>
+                <span class="item-detail-creator-time">${formatTime(item.createTime)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 收录于以下清单（引导回主场景） -->
+        ${containingLists.length > 0 ? `
+          <div style="margin-bottom:24px">
+            <div style="font-size:14px;color:var(--text-tertiary);margin-bottom:12px">收录于以下清单 · 完整互动请到清单页</div>
+            <div class="card-grid">
+              ${containingLists.map(l => renderListCard(l, { showEdit: false })).join('')}
+            </div>
+          </div>
+        ` : ''}
+      `;
+
+      document.getElementById('item-content').innerHTML = html;
+      // 极简版无按钮事件绑定（点赞/举报在清单页 drawer 里）
+    }
+
+    // ==================== 举报弹层 ====================
+    const reportModal = document.getElementById('report-modal');
+    const reportReasonsEl = document.getElementById('report-reasons');
+    const reportDescEl = document.getElementById('report-desc');
+    let pendingReport = null;
+
+    const REPORT_REASONS = [
+      { value: 'spam', label: '垃圾广告', emoji: '📢' },
+      { value: 'porn', label: '色情低俗', emoji: '🔞' },
+      { value: 'fraud', label: '欺诈诱导', emoji: '⚠️' },
+      { value: 'infringement', label: '侵权搬运', emoji: '©️' },
+      { value: 'other', label: '其他原因', emoji: '💬' }
+    ];
+
+    function openReportModal(type, targetId) {
+      pendingReport = { type, targetId };
+      reportReasonsEl.innerHTML = REPORT_REASONS.map((r, i) => `
+        <label class="list-option">
+          <input type="radio" name="report-reason" value="${r.value}" ${i === 0 ? 'checked' : ''}>
+          <div class="list-option-body">
+            <div class="list-option-cover list-option-cover--default">${r.emoji}</div>
+            <div class="list-option-text">
+              <div class="list-option-title">${r.label}</div>
+            </div>
+          </div>
+        </label>
+      `).join('');
+      reportDescEl.value = '';
+      reportModal.hidden = false;
+    }
+
+    function closeReportModal() {
+      reportModal.hidden = true;
+      pendingReport = null;
+    }
+
+    function submitReport() {
+      if (!pendingReport) return;
+      const reason = reportModal.querySelector('input[name="report-reason"]:checked')?.value;
+      if (!reason) { showToast('请选择举报原因', 'error'); return; }
+      const user = getCurrentUser();
+      addReport({
+        type: pendingReport.type,
+        targetId: pendingReport.targetId,
+        reason,
+        description: reportDescEl.value.trim(),
+        reporterId: user.id
+      });
+      closeReportModal();
+      showToast('✓ 已提交，管理员会尽快处理', 'success');
+    }
+
+    // 绑定弹层事件
+    reportModal.addEventListener('click', (e) => {
+      if (e.target === reportModal) closeReportModal();
+      const action = e.target.closest('[data-report-action]')?.dataset.reportAction;
+      if (action === 'cancel') closeReportModal();
+      if (action === 'submit') submitReport();
+    });
+
+    // SEO: 动态设置 meta 标签（支持 name 和 property 两种）
+    function setItemMeta(key, content) {
+      const isProperty = key.startsWith('og:') || key.startsWith('twitter:');
+      const selector = isProperty
+        ? `meta[property="${key}"]`
+        : `meta[name="${key}"]`;
+      let el = document.querySelector(selector);
+      if (!el) {
+        el = document.createElement('meta');
+        if (isProperty) el.setAttribute('property', key);
+        else el.setAttribute('name', key);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', content);
+    }
+  </script>
+</body>
+</html>
+

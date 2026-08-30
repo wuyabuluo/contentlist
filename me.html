@@ -1,0 +1,338 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="version" content="1.0.1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+  <title>我的 · 清单</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <main class="main">
+      <div class="container">
+
+        <!-- 个人资料 -->
+        <section id="profile-section" class="profile-header"></section>
+
+        <!-- 数据管理 -->
+        <div id="profile-extra-actions" class="profile-extra-actions"></div>
+
+        <!-- Tab 切换 -->
+        <div class="profile-tabs">
+          <button class="profile-tab active" data-tab="created">我创建的清单</button>
+          <button class="profile-tab" data-tab="favorited">我收藏的清单</button>
+        </div>
+
+        <!-- 内容区 -->
+        <div id="tab-content"></div>
+
+      </div>
+
+      <footer class="app-footer">
+        <div class="app-footer-inner">
+          <span>© 2026 清单</span>
+          <span class="app-footer-divider">·</span>
+          <a href="legal/agreement.html" target="_blank">用户协议</a>
+          <span class="app-footer-divider">·</span>
+          <a href="legal/privacy.html" target="_blank">隐私政策</a>
+          <span class="app-footer-divider">·</span>
+          <span class="app-footer-version">v1.0.1</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- 创建清单弹层（仅"我创建的清单" tab 用） -->
+  <div id="create-list-modal" class="modal-mask" hidden>
+    <div class="modal-card modal-card--publish">
+      <div class="modal-header">
+        <h3>创建新清单</h3>
+        <button class="modal-close" data-action="cancel" aria-label="关闭">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="new-list-form" style="display:flex;background:transparent;padding:0">
+          <input id="cl-title" class="form-input" type="text" placeholder="清单标题（必填，20字以内）" maxlength="20" style="font-size:15px">
+          <textarea id="cl-desc" class="form-input form-textarea" placeholder="清单简介（选填，50字以内）" maxlength="50"></textarea>
+          <label class="form-checkbox">
+            <input id="cl-anon" type="checkbox">
+            <span>匿名发布（不显示创建者）</span>
+          </label>
+          <p style="font-size:12px;color:var(--text-tertiary);margin-top:4px">
+            创建后可以从"首页"分享内容时选择加入这个清单
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-action="cancel">取消</button>
+        <button class="btn btn-primary" data-action="confirm">创建</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 编辑清单弹层 -->
+  <div id="edit-list-modal" class="modal-mask" hidden>
+    <div class="modal-card modal-card--publish">
+      <div class="modal-header">
+        <h3>编辑清单</h3>
+        <button class="modal-close" data-edit-action="cancel" aria-label="关闭">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="new-list-form" style="display:flex;background:transparent;padding:0">
+          <input id="el-title" class="form-input" type="text" placeholder="清单标题（必填，20字以内）" maxlength="20" style="font-size:15px">
+          <div style="position:relative;width:100%">
+            <textarea id="el-desc" class="form-input form-textarea" placeholder="清单简介（选填，50字以内）" maxlength="50"></textarea>
+            <button type="button" id="el-regen" class="btn-mini" style="position:absolute;right:8px;bottom:8px">↻ 重新生成</button>
+          </div>
+          <label class="form-checkbox">
+            <input id="el-anon" type="checkbox">
+            <span>匿名发布（不显示创建者）</span>
+          </label>
+          <p style="font-size:12px;color:var(--text-tertiary);margin-top:4px">
+            简介是创建时定下的，不会随内容自动变。点"重新生成"可一键更新
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-edit-action="cancel">取消</button>
+        <button class="btn btn-primary" data-edit-action="confirm">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // 登录守卫
+    if (!requireLogin('me.html')) {
+      // requireLogin 内已跳转
+    } else {
+      init();
+    }
+
+    function init() {
+      renderNavbar('me');
+      renderProfile();
+      switchTab('created');
+
+      // 绑定 tab 切换
+      document.querySelectorAll('.profile-tab').forEach(t => {
+        t.addEventListener('click', () => switchTab(t.dataset.tab));
+      });
+    }
+
+    function renderProfile() {
+      const user = getCurrentUser();
+      const myLists = getCurrentUserLists();
+      const favIds = getFavoriteListIds();
+      const favLists = getAllLists().filter(l => favIds.includes(l.id));
+
+      document.getElementById('profile-section').innerHTML = `
+        <div class="profile-avatar" style="background:${user.avatarColor}">${user.avatar}</div>
+        <div class="profile-info">
+          <div class="profile-name">${escapeHtml(user.name)}</div>
+          <div class="profile-bio">${escapeHtml(user.bio || '这个人很懒，什么都没写~')}</div>
+          <div class="profile-stats">
+            <div><span class="profile-stat-num">${myLists.length}</span>个清单</div>
+            <div><span class="profile-stat-num">${favLists.length}</span>个收藏</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost" id="logout-btn">退出登录</button>
+      `;
+
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        if (confirm('确定要退出登录吗？')) {
+          logout();
+          showToast('已退出登录');
+          setTimeout(() => window.location.href = 'index.html', 600);
+        }
+      });
+
+      // 数据导出（本地模式备份；未来接后端时可作为迁移数据源）
+      document.getElementById('profile-extra-actions').innerHTML = `
+        <button class="btn-link" id="export-data-btn" title="把你的清单和发布内容备份为 JSON 文件">
+          <span>📦</span> 导出我的数据
+        </button>
+      `;
+      document.getElementById('export-data-btn').addEventListener('click', () => {
+        const result = exportMyData();
+        if (result.ok) {
+          showToast(`✓ 已备份 ${result.count.lists} 个清单、${result.count.items} 条内容`, 'success');
+        } else {
+          showToast('导出失败：' + (result.error || '未知错误'), 'error');
+        }
+      });
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.profile-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === tab);
+      });
+      renderTabContent(tab);
+    }
+
+    function renderTabContent(tab) {
+      const container = document.getElementById('tab-content');
+      const user = getCurrentUser();
+
+      let lists = [];
+      if (tab === 'created') {
+        lists = getCurrentUserLists();
+      } else if (tab === 'favorited') {
+        const favIds = getFavoriteListIds();
+        lists = getAllLists().filter(l => favIds.includes(l.id));
+      }
+
+      if (lists.length === 0) {
+        const isCreated = tab === 'created';
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">${isCreated ? '📝' : '⭐'}</div>
+            <div class="empty-state-text">${isCreated ? '还没有创建过清单' : '还没有收藏任何清单'}</div>
+            ${isCreated
+              ? `<button class="btn btn-primary" id="empty-create-btn">＋ 创建一个清单</button>`
+              : `<a href="index.html" class="btn btn-primary">去发现</a>`
+            }
+          </div>
+        `;
+        // 空态下的"创建"按钮
+        const ecb = document.getElementById('empty-create-btn');
+        if (ecb) ecb.addEventListener('click', openCreateListModal);
+        return;
+      }
+
+      // "我创建的清单" tab 时在顶部加 "+" 按钮
+      const addBtn = tab === 'created'
+        ? `<div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button id="add-list-btn" class="btn btn-primary btn-sm">＋ 新建清单</button></div>`
+        : '';
+
+      container.innerHTML = addBtn + `<div class="card-grid">${lists.map(l => renderListCard(l, { showEdit: true })).join('')}</div>`;
+
+      const alb = document.getElementById('add-list-btn');
+      if (alb) alb.addEventListener('click', openCreateListModal);
+    }
+
+    // ==================== 创建清单弹层（兜底入口） ====================
+    const createListModal = document.getElementById('create-list-modal');
+    const clTitle = document.getElementById('cl-title');
+    const clDesc = document.getElementById('cl-desc');
+    const clAnon = document.getElementById('cl-anon');
+
+    function openCreateListModal() {
+      clTitle.value = '';
+      clDesc.value = '';
+      clAnon.checked = false;
+      createListModal.hidden = false;
+      setTimeout(() => clTitle.focus(), 100);
+    }
+    function closeCreateListModal() { createListModal.hidden = true; }
+
+    createListModal.addEventListener('click', (e) => {
+      if (e.target === createListModal) closeCreateListModal();
+      const action = e.target.closest('[data-action]')?.dataset.action;
+      if (action === 'cancel') closeCreateListModal();
+      if (action === 'confirm') confirmCreateList();
+    });
+
+    function confirmCreateList() {
+      const title = clTitle.value.trim();
+      if (!title) { showToast('请输入清单标题', 'error'); clTitle.focus(); return; }
+      const desc = clDesc.value.trim();
+      // 敏感词校验
+      const sens = validateBeforePublish(title + ' ' + desc);
+      if (!sens.ok) { showToast(sens.error, 'error'); return; }
+      const list = createUserList({
+        title,
+        description: desc,
+        anonymous: clAnon.checked
+      });
+      if (!list) { showToast('创建失败', 'error'); return; }
+      closeCreateListModal();
+      showToast(`✓ 已创建「${list.title}」`, 'success');
+      // 刷新数据
+      renderProfile();
+      renderTabContent('created');
+    }
+
+    // ==================== 编辑清单弹层 ====================
+    const editListModal = document.getElementById('edit-list-modal');
+    const elTitle = document.getElementById('el-title');
+    const elDesc = document.getElementById('el-desc');
+    const elAnon = document.getElementById('el-anon');
+    let editingListId = null;
+
+    function openEditListModal(listId) {
+      const list = getListById(listId);
+      if (!list) { showToast('清单不存在', 'error'); return; }
+      const user = getCurrentUser();
+      if (!user || list.creatorId !== user.id) { showToast('无权编辑', 'error'); return; }
+      editingListId = listId;
+      elTitle.value = list.title || '';
+      elDesc.value = list.description || '';
+      elAnon.checked = !!list.anonymous;
+      editListModal.hidden = false;
+      setTimeout(() => elTitle.focus(), 50);
+    }
+    function closeEditListModal() {
+      editListModal.hidden = true;
+      editingListId = null;
+    }
+
+    // "重新生成"按钮
+    document.getElementById('el-regen').addEventListener('click', () => {
+      if (!editingListId) return;
+      const list = getListById(editingListId);
+      if (!list) return;
+      const gen = autoGenerateIntro(list);
+      if (!gen) {
+        showToast('清单是空的，没法生成简介', 'error');
+        return;
+      }
+      elDesc.value = gen;
+      showToast('已根据当前内容重新生成', 'success');
+    });
+
+    // 弹层点击事件
+    editListModal.addEventListener('click', (e) => {
+      if (e.target === editListModal) closeEditListModal();
+      const action = e.target.closest('[data-edit-action]')?.dataset.editAction;
+      if (action === 'cancel') closeEditListModal();
+      if (action === 'confirm') confirmEditList();
+    });
+
+    function confirmEditList() {
+      if (!editingListId) return;
+      const title = elTitle.value.trim();
+      if (!title) { showToast('请输入清单标题', 'error'); elTitle.focus(); return; }
+      const desc = elDesc.value.trim();
+      // 敏感词校验
+      const sens = validateBeforePublish(title + ' ' + desc);
+      if (!sens.ok) { showToast(sens.error, 'error'); return; }
+      const result = editUserList(editingListId, {
+        title,
+        description: desc,
+        anonymous: elAnon.checked
+      });
+      if (!result.ok) { showToast(result.error, 'error'); return; }
+      closeEditListModal();
+      showToast('✓ 已保存', 'success');
+      renderProfile();
+      renderTabContent('created');
+    }
+
+    // 卡片"编辑"按钮事件委托
+    document.addEventListener('click', (e) => {
+      const editBtn = e.target.closest('[data-edit-list]');
+      if (editBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        openEditListModal(editBtn.dataset.editList);
+      }
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="version" content="1.0.1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+  <title>后台 · 清单</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- 登录视图 -->
+  <div id="login-view" class="auth-page">
+    <div class="auth-card" style="max-width:400px">
+      <div class="auth-logo" style="color:var(--text-primary)">
+        <span style="font-size:28px">🛠️</span> 清单 · 后台
+      </div>
+      <p class="auth-tagline">仅管理员可访问</p>
+      <form id="login-form" class="auth-form">
+        <div class="form-field">
+          <label class="form-label">账号</label>
+          <input id="login-username" class="form-input" type="text" placeholder="admin" autocomplete="username">
+        </div>
+        <div class="form-field">
+          <label class="form-label">密码</label>
+          <input id="login-password" class="form-input" type="password" placeholder="jmy-12345" autocomplete="current-password">
+        </div>
+        <div id="login-error" class="auth-error"></div>
+        <button type="submit" class="form-submit">登录</button>
+      </form>
+      <div class="admin-login-hint">
+        <strong>管理员账号：</strong> admin / jmy-12345
+      </div>
+    </div>
+  </div>
+
+  <!-- 后台主界面（登录后显示） -->
+  <div id="admin-view" class="admin-shell" hidden>
+
+    <!-- 顶栏 -->
+    <header class="admin-topbar">
+      <div class="admin-topbar-inner">
+        <div class="admin-brand">
+          <span style="font-size:18px">🛠️</span>
+          <span>清单 · 后台</span>
+        </div>
+        <div class="admin-topbar-user">
+          <span class="admin-user-chip">👤 admin</span>
+          <a href="index.html" class="btn btn-ghost btn-sm">← 返回前台</a>
+          <button id="logout-btn" class="btn btn-ghost btn-sm">退出</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-layout">
+      <!-- 侧边栏 -->
+      <aside class="admin-sidebar">
+        <button class="admin-tab active" data-tab="dashboard">
+          <span class="admin-tab-icon">📊</span>
+          <span>数据看板</span>
+        </button>
+        <button class="admin-tab" data-tab="reports">
+          <span class="admin-tab-icon">🚨</span>
+          <span>举报审核</span>
+          <span id="report-badge" class="admin-tab-badge" hidden>0</span>
+        </button>
+        <button class="admin-tab" data-tab="lists">
+          <span class="admin-tab-icon">📋</span>
+          <span>清单管理</span>
+        </button>
+        <button class="admin-tab" data-tab="items">
+          <span class="admin-tab-icon">🔗</span>
+          <span>内容管理</span>
+        </button>
+        <button class="admin-tab" data-tab="users">
+          <span class="admin-tab-icon">👥</span>
+          <span>用户管理</span>
+        </button>
+        <button class="admin-tab" data-tab="logs">
+          <span class="admin-tab-icon">📜</span>
+          <span>操作日志</span>
+        </button>
+      </aside>
+
+      <!-- 内容区 -->
+      <main class="admin-content">
+        <div id="tab-dashboard" class="admin-tab-panel"></div>
+        <div id="tab-reports" class="admin-tab-panel" hidden></div>
+        <div id="tab-lists" class="admin-tab-panel" hidden></div>
+        <div id="tab-items" class="admin-tab-panel" hidden></div>
+        <div id="tab-users" class="admin-tab-panel" hidden></div>
+        <div id="tab-logs" class="admin-tab-panel" hidden></div>
+
+        <footer class="app-footer">
+          <div class="app-footer-inner">
+            <span>© 2026 清单 · 管理后台</span>
+            <span class="app-footer-divider">·</span>
+            <a href="legal/agreement.html" target="_blank">用户协议</a>
+            <span class="app-footer-divider">·</span>
+            <a href="legal/privacy.html" target="_blank">隐私政策</a>
+            <span class="app-footer-divider">·</span>
+            <span class="app-footer-version">v1.0.1</span>
+          </div>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
+

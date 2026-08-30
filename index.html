@@ -1,0 +1,437 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="version" content="1.0.1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+  <title>清单 · 发现优质内容清单</title>
+  <meta name="description" content="清单是一个内容清单分享平台，把抖音、小红书、公众号、B站的好内容整理成清单，分享给懂你的人">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="清单 · 发现优质内容清单">
+  <meta property="og:description" content="把抖音、小红书、公众号、B站的好内容整理成清单">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <!-- 导航栏由 JS 注入 -->
+    <main class="main">
+      <div class="container">
+
+        <!-- Hero 区 -->
+        <section class="hero">
+          <h1 class="hero-title">你的内容清单，不止是收藏</h1>
+          <p class="hero-subtitle">把抖音、小红书、公众号、B 站的好内容整理成自己的清单，分享给懂你的人</p>
+
+          <!-- 中心输入框 -->
+          <div class="hero-input">
+            <div class="hero-input-header">
+              <div class="hero-input-title">
+                <span>✨</span>
+                <span>分享一个内容</span>
+              </div>
+              <div class="hero-input-hint">支持抖音 · 小红书 · 公众号 · B 站</div>
+            </div>
+            <textarea
+              id="hero-url"
+              class="hero-input-field textarea"
+              placeholder="粘贴链接或分享内容...&#10;纯链接：https://v.douyin.com/xxx&#10;分享复制：在 APP 点分享→复制，粘贴整段文字"
+            ></textarea>
+            <input
+              id="hero-intro"
+              class="hero-input-field input"
+              placeholder="给这条内容写一句介绍（40字以内）"
+              maxlength="40"
+            >
+            <div class="hero-input-footer">
+              <div class="platform-tags">
+                <span class="platform-tag douyin">🎵 抖音</span>
+                <span class="platform-tag xiaohongshu">📕 小红书</span>
+                <span class="platform-tag wechat">💬 公众号</span>
+                <span class="platform-tag bilibili">📺 B 站</span>
+              </div>
+              <div class="hero-input-actions">
+                <button id="hero-clear" class="btn btn-ghost btn-sm">清空</button>
+                <button id="hero-publish" class="btn btn-primary btn-sm">发布</button>
+              </div>
+            </div>
+            <div id="hero-hint" class="input-helper-text"></div>
+          </div>
+        </section>
+
+        <!-- 推荐清单 -->
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">热门清单</h2>
+              <p class="section-subtitle">大家都在整理的好内容</p>
+            </div>
+            <a href="#" class="section-more">查看更多 ›</a>
+          </div>
+          <div id="featured-lists" class="card-grid"></div>
+        </section>
+
+        <!-- 最新分享 -->
+        <section class="section">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">最新分享</h2>
+              <p class="section-subtitle">大家刚刚分享的有趣内容</p>
+            </div>
+            <a href="#" class="section-more">查看更多 ›</a>
+          </div>
+          <div id="latest-items" class="card-grid-2col"></div>
+        </section>
+
+      </div>
+
+      <footer class="app-footer">
+        <div class="app-footer-inner">
+          <span>© 2026 清单</span>
+          <span class="app-footer-divider">·</span>
+          <a href="legal/agreement.html" target="_blank">用户协议</a>
+          <span class="app-footer-divider">·</span>
+          <a href="legal/privacy.html" target="_blank">隐私政策</a>
+          <span class="app-footer-divider">·</span>
+          <span class="app-footer-version">v1.0.1</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- 发布后弹出的"选择清单"弹层 -->
+  <div id="publish-modal" class="modal-mask" hidden>
+    <div class="modal-card modal-card--publish">
+      <div class="modal-header">
+        <h3>添加到一个清单</h3>
+        <button class="modal-close" data-action="cancel" aria-label="关闭">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint">这个内容你想归到哪个清单？</p>
+
+        <div id="publish-list-options" class="list-options">
+          <!-- 动态填充 -->
+        </div>
+
+        <div class="new-list-section">
+          <button id="new-list-toggle" class="new-list-toggle" type="button">
+            <span class="new-list-toggle-icon">＋</span>
+            <span>创建新清单</span>
+          </button>
+          <div id="new-list-form" class="new-list-form" hidden>
+            <input id="new-list-title" class="form-input" type="text" placeholder="清单标题（必填，20字以内）" maxlength="20">
+            <textarea id="new-list-desc" class="form-input form-textarea" placeholder="清单简介（选填，50字以内）" maxlength="50"></textarea>
+            <label class="form-checkbox">
+              <input id="new-list-anon" type="checkbox">
+              <span>匿名发布</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" data-action="cancel">取消</button>
+        <button id="publish-confirm-btn" class="btn btn-primary" data-action="confirm">发布</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // ==================== 首页逻辑 ====================
+
+    // 渲染导航（顶部的入口已经够用，Hero 区域聚焦发布动作）
+    renderNavbar('home');
+
+    // 如果是从移动端 FAB 跳过来的（#publish），自动 focus 输入框
+    if (location.hash === '#publish') {
+      setTimeout(() => {
+        const urlField = document.getElementById('hero-url');
+        if (urlField) urlField.focus();
+      }, 100);
+    }
+
+    // 渲染推荐清单
+    function renderFeaturedLists(query = '') {
+      const container = document.getElementById('featured-lists');
+      let lists = [...getAllLists()].sort((a, b) => b.collectCount - a.collectCount);
+      if (query) {
+        const q = query.toLowerCase();
+        lists = lists.filter(l =>
+          l.title.toLowerCase().includes(q) ||
+          (l.description || '').toLowerCase().includes(q)
+        );
+      }
+      if (lists.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">没找到匹配的清单</div></div>';
+        return;
+      }
+      container.innerHTML = lists.map(renderListCard).join('');
+    }
+
+    // 渲染最新分享
+    function renderLatestItems(query = '') {
+      const container = document.getElementById('latest-items');
+      let items = [...getAllItems()].sort((a, b) => new Date(b.createTime) - new Date(a.createTime));
+      if (query) {
+        const q = query.toLowerCase();
+        items = items.filter(i => (i.intro || '').toLowerCase().includes(q));
+      }
+      if (items.length === 0) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">没找到匹配的内容</div></div>';
+        return;
+      }
+      container.innerHTML = items.map(renderItemCard).join('');
+    }
+
+    // 初次渲染
+    let initialQuery = '';
+    const urlSearch = getQueryParam('search');
+    if (urlSearch) {
+      initialQuery = urlSearch;
+      const si = document.getElementById('search-input');
+      if (si) si.value = urlSearch;
+    }
+    renderFeaturedLists(initialQuery);
+    renderLatestItems(initialQuery);
+
+    // ==================== 搜索 ====================
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+      let searchTimer = null;
+      searchInput.addEventListener('input', (e) => {
+        const q = e.target.value.trim();
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          renderFeaturedLists(q);
+          renderLatestItems(q);
+        }, 200);
+      });
+    }
+
+    // ==================== Hero 输入框 - 发布 ====================
+    const urlField = document.getElementById('hero-url');
+    const introField = document.getElementById('hero-intro');
+    const hint = document.getElementById('hero-hint');
+    const publishBtn = document.getElementById('hero-publish');
+    const clearBtn = document.getElementById('hero-clear');
+
+    // 实时校验提示
+    function updateHint() {
+      const url = urlField.value.trim();
+      const intro = introField.value.trim();
+      if (!url && !intro) {
+        hint.textContent = '';
+        hint.className = 'input-helper-text';
+        return;
+      }
+      if (url) {
+        const r = validateUrl(url);
+        if (!r.valid) {
+          hint.textContent = '⚠ ' + r.error;
+          hint.className = 'input-helper-text error';
+          return;
+        }
+      }
+      if (intro && intro.length > 40) {
+        hint.textContent = '⚠ 介绍不能超过 40 字';
+        hint.className = 'input-helper-text error';
+        return;
+      }
+      // OK
+      if (url) {
+        const r = validateUrl(url);
+        if (r.valid) {
+          const platform = getPlatformInfo(r.platform);
+          const isFromText = r.url && r.url !== url;
+          hint.textContent = `✓ 已识别为 ${platform.shortName} 链接${isFromText ? '（已从分享内容中提取）' : ''}${intro ? '，可以发布了' : '，请补充介绍'}`;
+          hint.className = 'input-helper-text success';
+        }
+      } else {
+        hint.textContent = '请粘贴链接或分享内容';
+        hint.className = 'input-helper-text';
+      }
+    }
+    urlField.addEventListener('input', updateHint);
+    introField.addEventListener('input', updateHint);
+
+    clearBtn.addEventListener('click', () => {
+      urlField.value = '';
+      introField.value = '';
+      updateHint();
+      urlField.focus();
+    });
+
+    publishBtn.addEventListener('click', () => {
+      if (!requireLogin('index.html')) return;
+      const url = urlField.value.trim();
+      const intro = introField.value.trim();
+      if (!url) { showToast('请粘贴链接', 'error'); urlField.focus(); return; }
+      const r = validateUrl(url);
+      if (!r.valid) { showToast(r.error, 'error'); return; }
+      if (!intro) { showToast('请填写介绍', 'error'); introField.focus(); return; }
+      if (intro.length > 40) { showToast('介绍不能超过 40 字', 'error'); return; }
+      // 敏感词校验
+      const sens = validateBeforePublish(intro);
+      if (!sens.ok) { showToast(sens.error, 'error'); return; }
+      // 校验通过 → 打开"加入清单"弹层（r.url 是提取/校验后的纯 URL）
+      openPublishModal({ url: r.url, intro, platform: r.platform });
+    });
+
+    // ==================== 发布弹层 ====================
+    const publishModal = document.getElementById('publish-modal');
+    const publishListOptions = document.getElementById('publish-list-options');
+    const newListToggle = document.getElementById('new-list-toggle');
+    const newListForm = document.getElementById('new-list-form');
+    const newListTitle = document.getElementById('new-list-title');
+    const newListDesc = document.getElementById('new-list-desc');
+    const newListAnon = document.getElementById('new-list-anon');
+    const publishConfirmBtn = document.getElementById('publish-confirm-btn');
+    let pendingPayload = null;   // 待发布的 {url, intro, platform}
+    let newListExpanded = false; // 新建清单表单是否展开
+
+    function openPublishModal(payload) {
+      pendingPayload = payload;
+      newListExpanded = false;
+      newListForm.hidden = true;
+      newListTitle.value = '';
+      newListDesc.value = '';
+      newListAnon.checked = false;
+      renderPublishListOptions();
+      publishModal.hidden = false;
+    }
+
+    function closePublishModal() {
+      publishModal.hidden = true;
+      pendingPayload = null;
+    }
+
+    function renderPublishListOptions() {
+      const myLists = getCurrentUserLists();
+      const opts = [];
+
+      // 默认选项：先存着
+      opts.push(`
+        <label class="list-option">
+          <input type="radio" name="list-select" value="__none__" checked>
+          <div class="list-option-body">
+            <div class="list-option-cover list-option-cover--default">📌</div>
+            <div class="list-option-text">
+              <div class="list-option-title">先存着</div>
+              <div class="list-option-sub">暂不加入任何清单</div>
+            </div>
+          </div>
+        </label>
+      `);
+
+      // 用户已有清单
+      myLists.forEach(l => {
+        opts.push(`
+          <label class="list-option">
+            <input type="radio" name="list-select" value="${escapeHtml(l.id)}">
+            <div class="list-option-body">
+              <div class="list-option-cover" style="background:${l.coverColor}">${l.coverEmoji}</div>
+              <div class="list-option-text">
+                <div class="list-option-title">${escapeHtml(l.title)}</div>
+                <div class="list-option-sub">${l.itemIds.length} 条内容${l.anonymous ? ' · 匿名' : ''}</div>
+              </div>
+            </div>
+          </label>
+        `);
+      });
+
+      publishListOptions.innerHTML = opts.join('');
+    }
+
+    // 弹层：切换"创建新清单"展开
+    newListToggle.addEventListener('click', () => {
+      newListExpanded = !newListExpanded;
+      newListForm.hidden = !newListExpanded;
+      if (newListExpanded) {
+        newListTitle.focus();
+      }
+    });
+
+    // 弹层：mask 点击关闭
+    publishModal.addEventListener('click', (e) => {
+      if (e.target === publishModal) closePublishModal();
+    });
+
+    // 弹层：取消 / 确认按钮
+    publishModal.addEventListener('click', (e) => {
+      const action = e.target.closest('[data-action]')?.dataset.action;
+      if (action === 'cancel') closePublishModal();
+      if (action === 'confirm') confirmPublish();
+    });
+
+    function confirmPublish() {
+      if (!pendingPayload) return;
+      const selected = publishModal.querySelector('input[name="list-select"]:checked');
+      const selectedValue = selected ? selected.value : '__none__';
+
+      // 0. 敏感词校验（发布前）
+      const sens = validateBeforePublish(pendingPayload.intro);
+      if (!sens.safe) {
+        showToast(`内容含敏感词：${sens.hit.join('、')}`, 'error');
+        return;
+      }
+
+      // 1. 始终先发布 item
+      const newItem = publishUserItem({
+        url: pendingPayload.url,
+        intro: pendingPayload.intro,
+        platform: pendingPayload.platform
+      });
+      if (!newItem) { showToast('发布失败', 'error'); return; }
+
+      // 2. 如果选了某个清单（不是"先存着"），就加入
+      let targetList = null;
+      if (newListExpanded) {
+        // 创建新清单
+        const title = newListTitle.value.trim();
+        if (!title) {
+          showToast('请输入清单标题', 'error');
+          newListTitle.focus();
+          return;
+        }
+        const created = createUserList({
+          title,
+          description: newListDesc.value.trim(),
+          anonymous: newListAnon.checked
+        });
+        if (created) {
+          addItemToUserList(newItem.id, created.id);
+          targetList = created;
+        }
+      } else if (selectedValue !== '__none__') {
+        // 加入已有清单
+        const ok = addItemToUserList(newItem.id, selectedValue);
+        if (ok) {
+          targetList = getListById(selectedValue);
+        }
+      }
+
+      // 3. 关闭弹层、清空输入
+      closePublishModal();
+      urlField.value = '';
+      introField.value = '';
+      updateHint();
+
+      // 4. 反馈
+      if (targetList) {
+        showToast(`✓ 已发布并加入「${targetList.title}」`, 'success');
+      } else {
+        const platform = getPlatformInfo(pendingPayload.platform);
+        showToast(`✓ 已发布到 ${platform.shortName}`, 'success');
+      }
+
+      // 5. 刷新首页信息流（让新内容立刻出现）
+      renderFeaturedLists(document.getElementById('search-input')?.value || '');
+      renderLatestItems(document.getElementById('search-input')?.value || '');
+    }
+  </script>
+</body>
+</html>
+

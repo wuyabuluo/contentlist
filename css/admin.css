@@ -1,0 +1,435 @@
+/* ============================================================
+   后台管理 - admin.css
+   复用前台 style.css 的基础变量和组件，新增后台专用样式
+   ============================================================ */
+
+/* 全局：HTML hidden 属性强制生效（避免被 display: flex 等覆盖） */
+[hidden] {
+  display: none !important;
+}
+
+.admin-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-soft);
+}
+
+/* ===== 顶栏 ===== */
+.admin-topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.admin-topbar-inner {
+  height: 100%;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.admin-topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-user-chip {
+  padding: 4px 12px;
+  background: var(--bg-soft);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ===== 布局：侧边栏 + 内容 ===== */
+.admin-layout {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.admin-sidebar {
+  width: 200px;
+  background: #fff;
+  border-right: 1px solid var(--border);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.admin-tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  transition: all 0.15s;
+  position: relative;
+}
+
+.admin-tab:hover {
+  background: var(--bg-soft);
+  color: var(--text-primary);
+}
+
+.admin-tab.active {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.admin-tab-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+.admin-tab-badge {
+  margin-left: auto;
+  background: var(--primary);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 18px;
+  text-align: center;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 28px 32px;
+  overflow-y: auto;
+}
+
+/* ===== 页面标题 ===== */
+.admin-page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+
+.admin-page-sub {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-bottom: 24px;
+}
+
+.admin-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 32px 0 12px;
+  letter-spacing: -0.2px;
+}
+
+/* ===== KPI 卡片（数据看板） ===== */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.kpi-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  transition: all 0.15s;
+}
+
+.kpi-card:hover {
+  border-color: var(--border-medium);
+}
+
+.kpi-card-warn {
+  background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+  border-color: #ffc7d1;
+}
+
+.kpi-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-sub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+.kpi-sub a {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+/* ===== 表格 ===== */
+.admin-table-wrap {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.admin-table th {
+  background: var(--bg-soft);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tr:hover td {
+  background: var(--bg-soft);
+}
+
+.admin-table a {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.admin-table a:hover {
+  color: var(--primary);
+}
+
+.admin-table code {
+  font-size: 12px;
+  background: var(--bg-soft);
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--text-secondary);
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+}
+
+.empty-row {
+  text-align: center !important;
+  color: var(--text-tertiary);
+  padding: 40px 16px !important;
+  font-size: 13px;
+}
+
+.action-col {
+  white-space: nowrap;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-avatar-sm {
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.link-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-muted {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+/* ===== 状态标签 ===== */
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tag-pending { background: #fff4e6; color: #d46b08; }
+.tag-approved { background: #e6f9ee; color: #389e0d; }
+.tag-rejected { background: #f5f5f5; color: #8c8c8c; }
+.tag-banned { background: #fff1f0; color: #cf1322; }
+.tag-normal { background: #e6f7ff; color: #096dd9; }
+.tag-muted { background: var(--bg-soft); color: var(--text-tertiary); }
+
+/* ===== 小按钮 ===== */
+.btn-mini {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: #fff;
+  transition: all 0.15s;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-mini:hover {
+  background: var(--bg-soft);
+  border-color: var(--border-strong);
+}
+
+.btn-mini-danger {
+  border-color: #ffccc7;
+  color: #cf1322;
+  background: #fff1f0;
+}
+
+.btn-mini-danger:hover {
+  background: #ffccc7;
+  border-color: #ffa39e;
+}
+
+/* ===== 筛选条（举报） ===== */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 500;
+}
+
+.filter-pill:hover {
+  border-color: var(--border-medium);
+  color: var(--text-primary);
+}
+
+.filter-pill.active {
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.pill-count {
+  background: var(--bg-soft);
+  color: var(--text-tertiary);
+  border-radius: var(--radius-pill);
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 16px;
+  text-align: center;
+}
+
+.filter-pill.active .pill-count {
+  background: #fff;
+  color: var(--primary);
+}
+
+/* ===== Toast 复用前台样式，但加深对比 ===== */
+#admin-toast {
+  top: 72px;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+  .admin-sidebar {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 8px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .admin-tab {
+    white-space: nowrap;
+    padding: 8px 12px;
+  }
+  .admin-content {
+    padding: 20px 16px;
+  }
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .admin-topbar-user {
+    gap: 8px;
+  }
+}

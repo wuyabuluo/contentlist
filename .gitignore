@@ -1,0 +1,31 @@
+# 测试 / 截图 / 软删除目录
+.preview/
+.preview/**
+
+# 临时 / 编辑器
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+*~
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# Node（未来接后端时再用）
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 环境变量（接后端时再加）
+.env
+.env.local
+.env.*.local
+
+# Vercel（自动生成的，不需要入库）
+.vercel
