@@ -1420,6 +1420,72 @@ input, textarea {
   color: var(--text-tertiary);
 }
 
+/* 我的页：头像上的"换"小按钮 */
+.profile-avatar {
+  position: relative;
+}
+.profile-avatar-edit {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid var(--border-medium);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s;
+  font-family: inherit;
+  padding: 0;
+}
+.profile-avatar-edit:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: scale(1.08);
+}
+
+/* 换头像弹层 · emoji 网格 */
+.avatar-picker-card {
+  max-width: 360px;
+}
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 4px 0;
+}
+.avatar-grid-item {
+  aspect-ratio: 1 / 1;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+  font-size: 30px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  padding: 0;
+  line-height: 1;
+}
+.avatar-grid-item:hover {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  transform: scale(1.05);
+}
+.avatar-grid-item.active {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
 .profile-stat-num {
   color: var(--text-primary);
   font-weight: 700;

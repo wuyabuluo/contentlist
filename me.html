@@ -21,6 +21,23 @@
         <!-- 数据管理 -->
         <div id="profile-extra-actions" class="profile-extra-actions"></div>
 
+        <!-- 换头像弹层（默认隐藏，点"换头像"按钮显示） -->
+        <div id="avatar-picker-mask" class="modal-mask" hidden>
+          <div class="modal-card avatar-picker-card">
+            <div class="modal-header">
+              <h3>选个头像</h3>
+              <button class="modal-close" data-avatar-action="cancel" aria-label="关闭">✕</button>
+            </div>
+            <div class="modal-body">
+              <div id="avatar-grid" class="avatar-grid"></div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-ghost btn-sm" data-avatar-action="cancel">关闭</button>
+              <button class="btn btn-ghost btn-sm" data-avatar-action="random">🎲 随机</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Tab 切换 -->
         <div class="profile-tabs">
           <button class="profile-tab active" data-tab="created">我创建的清单</button>
@@ -131,7 +148,10 @@
       const favLists = getAllLists().filter(l => favIds.includes(l.id));
 
       document.getElementById('profile-section').innerHTML = `
-        <div class="profile-avatar" style="background:${user.avatarColor}">${user.avatar}</div>
+        <div class="profile-avatar" style="background:${user.avatarColor}">
+          <span id="profile-avatar-emoji">${escapeHtml(user.avatar || '我')}</span>
+          <button id="change-avatar-btn" class="profile-avatar-edit" type="button" aria-label="换头像">✎</button>
+        </div>
         <div class="profile-info">
           <div class="profile-name">${escapeHtml(user.name)}</div>
           <div class="profile-bio">${escapeHtml(user.bio || '这个人很懒，什么都没写~')}</div>
@@ -330,6 +350,61 @@
         e.preventDefault();
         e.stopPropagation();
         openEditListModal(editBtn.dataset.editList);
+      }
+    });
+
+    // ==================== 换头像弹层 ====================
+    const avatarMask = document.getElementById('avatar-picker-mask');
+    const avatarGrid = document.getElementById('avatar-grid');
+
+    function openAvatarPicker() {
+      const cur = getCurrentUser();
+      avatarGrid.innerHTML = AVATAR_EMOJIS.map(e => `
+        <button class="avatar-grid-item ${cur && cur.avatar === e ? 'active' : ''}" data-avatar="${e}" type="button">${e}</button>
+      `).join('');
+      avatarMask.hidden = false;
+    }
+    function closeAvatarPicker() {
+      avatarMask.hidden = true;
+    }
+
+    // 触发按钮（点 profile 头像上小铅笔）
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#change-avatar-btn')) {
+        e.preventDefault();
+        e.stopPropagation();
+        openAvatarPicker();
+      }
+    });
+
+    // 弹层点击处理（mask / 关闭 / 随机 / 选具体 emoji）
+    avatarMask.addEventListener('click', (e) => {
+      if (e.target === avatarMask) return closeAvatarPicker();
+      const action = e.target.closest('[data-avatar-action]')?.dataset.avatarAction;
+      const pick = e.target.closest('[data-avatar]');
+      if (action === 'cancel') return closeAvatarPicker();
+      if (action === 'random') {
+        const r = pickRandomAvatar();
+        const me = updateMyAvatar(r);
+        if (me.ok) {
+          document.getElementById('profile-avatar-emoji').textContent = me.user.avatar;
+          showToast(`✓ 已换成 ${me.user.avatar}`, 'success');
+          // 刷新弹层高亮
+          avatarGrid.querySelectorAll('.avatar-grid-item').forEach(b => b.classList.toggle('active', b.dataset.avatar === me.user.avatar));
+        }
+        return;
+      }
+      if (pick) {
+        const me = updateMyAvatar(pick.dataset.avatar);
+        if (me.ok) {
+          document.getElementById('profile-avatar-emoji').textContent = me.user.avatar;
+          showToast('✓ 头像已更新', 'success');
+          // 刷新弹层高亮
+          avatarGrid.querySelectorAll('.avatar-grid-item').forEach(b => b.classList.toggle('active', b.dataset.avatar === me.user.avatar));
+          setTimeout(closeAvatarPicker, 400);
+        } else {
+          showToast('更新失败：' + (me.error || '未知错误'), 'error');
+        }
       }
     });
   </script>

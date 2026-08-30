@@ -169,13 +169,13 @@ function getUserById(id) {
 
 // 写：创建匿名用户（MOCK 清空后的登录入口）
 // 用途：用户首次进首页 / 登录页提交时自动建档
-// 入参：name（昵称）、avatar（首字）、avatarColor（背景色）
+// 入参：name（昵称）、avatar（emoji 或文字，缺省随机选）、avatarColor（背景色，缺省随机选）
 // 返回：user 对象
 function createAnonUser({ name, avatar, avatarColor, bio }) {
   const user = {
     id: 'u_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
     name: (name || '匿名').slice(0, 20),
-    avatar: (avatar || (name ? name[0] : '匿')).slice(0, 2),
+    avatar: avatar || pickRandomAvatar(),
     avatarColor: avatarColor || pickRandomColor(),
     bio: (bio || '').slice(0, 100),
     createdAt: new Date().toISOString().slice(0, 10)
@@ -184,6 +184,22 @@ function createAnonUser({ name, avatar, avatarColor, bio }) {
   users.push(user);
   saveLocalUsers(users);
   return user;
+}
+
+// 写：更新当前用户的头像
+// 用途：me.html "换头像" 按钮
+// 入参：newAvatar（新 emoji 字符串）
+// 返回：{ ok: true, user } | { ok: false, error }
+function updateMyAvatar(newAvatar) {
+  const user = getCurrentUser();
+  if (!user) return { ok: false, error: '未登录' };
+  if (!newAvatar) return { ok: false, error: '头像不能为空' };
+  const users = getLocalUsers();
+  const me = users.find(u => u.id === user.id);
+  if (!me) return { ok: false, error: '用户不存在' };
+  me.avatar = String(newAvatar).slice(0, 4); // emoji 占 2-4 字节
+  saveLocalUsers(users);
+  return { ok: true, user: me };
 }
 
 // 根据 ID 获取 item
@@ -397,6 +413,10 @@ const COVER_COLORS = ['#fe2c55', '#ff2442', '#07c160', '#722ed1', '#ffa940', '#1
 const COVER_EMOJIS = ['📚', '🎨', '🍳', '🏠', '💪', '📷', '🎵', '✈️', '☕', '🌙', '🎮', '🌿', '🍰', '🛍️'];
 function pickRandomColor() { return COVER_COLORS[Math.floor(Math.random() * COVER_COLORS.length)]; }
 function pickRandomEmoji() { return COVER_EMOJIS[Math.floor(Math.random() * COVER_EMOJIS.length)]; }
+
+// 用户头像 emoji 池（12 个，覆盖动物/自然/食物，避开平台敏感）
+const AVATAR_EMOJIS = ['🦊', '🐱', '🐶', '🦁', '🐼', '🐨', '🦄', '🐸', '🐰', '🦉', '🐢', '🦋'];
+function pickRandomAvatar() { return AVATAR_EMOJIS[Math.floor(Math.random() * AVATAR_EMOJIS.length)]; }
 
 // 读：用户创建的清单
 function getUserLists() {
