@@ -1496,6 +1496,14 @@ input, textarea {
   font-size: 56px;
   margin-bottom: 12px;
   opacity: 0.5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  line-height: 1;
+  /* emoji 视觉中心微调 */
+  transform: translateY(-2px);
 }
 
 .empty-state-text {

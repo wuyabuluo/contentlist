@@ -1,9 +1,10 @@
 # 清单 · 产品开发文档
 
 > **版本**：v1.0.1 · 2026-08-30
-> **模式**：纯前端 + localStorage（自用期）
+> **模式**：纯前端 + localStorage（已部署到 Cloudflare Pages）
 > **目标**：内容清单分享平台（类网易云歌单）
-> **维护**：单人在前端浏览器内自用 → 内容充裕后接后端 → 公测 → 正式上线
+> **URL**：https://contentlist.pages.dev
+> **维护**：自用期（公网公开） → 内容充裕后接后端 → 公测 → 正式上线
 
 ---
 
@@ -27,7 +28,7 @@
 |---|---|---|
 | 前端 | 纯 HTML + 原生 JS + CSS | 不引入框架，零依赖 |
 | 数据 | localStorage 模拟后端 | 演示期无真实数据库 |
-| 部署 | 静态站（计划 Vercel） | 暂未部署，本地浏览器自用 |
+| 部署 | **Cloudflare Pages** | `https://contentlist.pages.dev`（自动从 GitHub 部署） |
 | 法律 | `legal/agreement.html` + `legal/privacy.html` | 已上线可用 |
 
 **已知限制**：
@@ -105,12 +106,12 @@
 | 2 | 删根目录冗余文件 | ✅ 软删除到 `.preview/_disabled/` | privacy.html + terms.html |
 | 3 | 页脚加协议链接 | ✅ 5 个页面统一 footer | index / list / item / me / admin |
 | 4 | MOCK 清空（方案 B） | ✅ B1 已实施 | 见 §6.1 |
+| 5 | **部署到公网** | ✅ **Cloudflare Pages** `contentlist.pages.dev` | 自动从 GitHub 部署，HTTPS 默认开启 |
 
 ### 🟡 推荐（暂不做）
 
 - 真机测试（iOS Safari + Android Chrome）
 - 敏感词后端校验（接后端时一起做）
-- Vercel 部署
 - 域名 + 备案
 - sitemap.xml + robots.txt
 - favicon + OG image
@@ -125,13 +126,16 @@
 
 ## 6. 开发节点
 
-> **核心原则**：当前自用期只用前端浏览器，不接后端、不宣传、不挂域名。
+> **核心原则**：当前自用期已部署到 Cloudflare Pages（公网可访问，朋友可扫码进入），但不接后端、不宣传、不挂自己的域名。
 
-### 6.0 节点 0：自用期 ⏳ 进行中
+### 6.0 节点 0：自用期（公网版）⏳ 进行中
 
 **触发**：从现在起
+**已部署**：✅ Cloudflare Pages → `https://contentlist.pages.dev`
+
 **任务**：
-- 在前端浏览器里创建清单、发布内容
+- 在浏览器里创建清单、发布内容
+- 朋友通过 URL 访问 → 各自有独立的 localStorage 账号（互相隔离）
 - me.html 顶部 tab "我创建的清单" 是入口
 - 首页右下角 FAB → 分享链接
 - 分享后弹"加入已有清单 / 创建新清单"引导
@@ -139,12 +143,40 @@
 **数据备份（必做）**：
 - 每周 / 每次大量内容后，在 me.html 点"📦 导出我的数据"
 - 文件名格式：`内容清单-备份-{昵称}-{YYYY-MM-DD}.json`
-- 建议存到网盘（百度/OneDrive/iCloud），不要只放本地
+- 建议存到网盘（百度/OneDrive/iCloud），不要只放浏览器
 
-**验收**：
+**验收（进入节点 2 触发条件）**：
 - 清单数 ≥ 30
 - 单条数 ≥ 100
 - 出现自然分类（如"做饭灵感 / 长文收藏 / 旅行攻略"等）
+
+### 6.0.1 节点 0.5：Cloudflare Pages 部署（已完成）
+
+**为什么选 Cloudflare 而不是 Vercel**：
+- Vercel 注册时大陆 IP 触发账号风控（"account requires further verification"）
+- Cloudflare 对国内访问更友好（香港节点 + 海外节点自动选优）
+- 同样免费，自动 HTTPS，自动从 GitHub 部署
+
+**部署配置**：
+- 仓库：`https://github.com/wuyabuluo/contentlist`
+- 分支：`main`（每次 push 自动触发部署）
+- 构建命令：留空（纯静态）
+- Build output：留空
+- 自定义 headers：见 `vercel.json`（X-Frame-Options / Referrer-Policy 等）
+
+**仓库结构（无 vercel/Vercel 平台）**：
+- `vercel.json`（命名沿用，可改名 `cloudflare.json`，功能一致）
+- `.gitignore`（排除 `.preview/`、token 文件、node_modules 等）
+- `DEPLOY.md`（详细操作手册）
+
+**已知 Cloudflare 限制**：
+- 国内访问延迟 200-500ms（海外节点）
+- 免费版每月 500 次构建 + 无限流量
+- 5 分钟构建冷却（频繁 push 会被队列）
+
+**回退策略**：
+- 国内访问要快：等节点 5 备案 + 国内 CDN
+- 临时回本地：直接双击 `index.html`（file:// 下 localStorage 正常）
 
 ---
 
@@ -207,9 +239,9 @@ POST /api/likes              # 恢复点赞
 
 #### 6.2.3 域名 + 备案
 
-- 短期：用 Vercel/Cloudflare 部署，子域名 `xxx.vercel.app` 即可
-- 中期：买自己的域名（阿里云/Cloudflare Registrar）
-- 国内访问快：需要 ICP 备案（7-20 天流程）
+- **当前**：Cloudflare Pages 子域名 `contentlist.pages.dev`（已上线）
+- 短期扩展：买自己的域名（Cloudflare Registrar 最便宜，~$10/年）
+- 国内访问快：需要 ICP 备案（7-20 天流程）+ 切换到国内 CDN
 
 ---
 
@@ -358,7 +390,7 @@ D:\minimax-workplace\内容清单\
 
 | 版本 | 日期 | 变更 |
 |---|---|---|
-| v1.0.1 | 2026-08-30 | MOCK 清空（B1）+ 登录页自动建匿名 user + 5 页面加 footer + 软删除冗余文件 + admin 密码改强 + APP_VERSION 升级 |
+| v1.0.1 | 2026-08-30 | MOCK 清空（B1）+ 登录页自动建匿名 user + 5 页面加 footer + 软删除冗余文件 + admin 密码改强 + APP_VERSION 升级 + **Cloudflare Pages 部署上线** + 修复 logo 对齐 + 修复 data.js 语法错 |
 | v1.0.0 | 2026-08-30 | 初始版本：完成上线 P0 必修 + 数据导出 + 登录页清理 + 协议勾选 |
 | | | |
 
@@ -367,6 +399,9 @@ D:\minimax-workplace\内容清单\
 ## 10. 待办（按优先级）
 
 - [x] **节点 1 → 4 连做**：admin 密码 / 删冗余 / 加页脚 / MOCK 清空（B1）
+- [x] **节点 0.5**：Cloudflare Pages 部署上线（公网可访问）
+- [x] 修复 data.js 语法错（MOCK 数组残留对象字面量）
+- [x] 修复 logo 图标对齐
 - [ ] 自用期内：定期导出数据
 - [ ] 内容充裕后：进入节点 2（选后端）
 - [ ] 节点 3：迁移数据（贴 JSON 给我，我写脚本）
