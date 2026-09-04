@@ -377,8 +377,8 @@
 
       // 0. 敏感词校验（发布前）
       const sens = validateBeforePublish(pendingPayload.intro);
-      if (!sens.safe) {
-        showToast(`内容含敏感词：${sens.hit.join('、')}`, 'error');
+      if (!sens.ok) {
+        showToast(`内容含敏感词：${sens.words.join('、')}`, 'error');
         return;
       }
 
