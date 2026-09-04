@@ -205,6 +205,14 @@
         const q = e.target.value.trim();
         clearTimeout(searchTimer);
         searchTimer = setTimeout(() => {
+          // 同步更新 URL（不刷新页面），刷新 / 分享链接能保留搜索状态
+          const url = new URL(window.location.href);
+          if (q) {
+            url.searchParams.set('search', q);
+          } else {
+            url.searchParams.delete('search');
+          }
+          history.replaceState({}, '', url);
           renderFeaturedLists(q);
           renderLatestItems(q);
         }, 200);
