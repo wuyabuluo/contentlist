@@ -349,6 +349,10 @@
     newListToggle.addEventListener('click', () => {
       newListExpanded = !newListExpanded;
       newListForm.hidden = !newListExpanded;
+      // 同步 radio：展开时取消"先存着"（用户意图是建新清单），
+      //            关闭时恢复"先存着"（回到默认状态）
+      const noneRadio = publishModal.querySelector('input[value="__none__"]');
+      if (noneRadio) noneRadio.checked = !newListExpanded;
       if (newListExpanded) {
         newListTitle.focus();
       }
