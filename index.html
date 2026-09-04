@@ -65,8 +65,8 @@
         <section class="section">
           <div class="section-header">
             <div>
-              <h2 class="section-title">热门清单</h2>
-              <p class="section-subtitle">大家都在整理的好内容</p>
+              <h2 class="section-title" id="featured-title">热门清单</h2>
+              <p class="section-subtitle" id="featured-sub">大家都在整理的好内容</p>
             </div>
             <a href="#" class="section-more">查看更多 ›</a>
           </div>
@@ -77,8 +77,8 @@
         <section class="section">
           <div class="section-header">
             <div>
-              <h2 class="section-title">最新分享</h2>
-              <p class="section-subtitle">大家刚刚分享的有趣内容</p>
+              <h2 class="section-title" id="latest-title">最新分享</h2>
+              <p class="section-subtitle" id="latest-sub">大家刚刚分享的有趣内容</p>
             </div>
             <a href="#" class="section-more">查看更多 ›</a>
           </div>
@@ -193,6 +193,18 @@
       initialQuery = urlSearch;
       const si = document.getElementById('search-input');
       if (si) si.value = urlSearch;
+
+      // 搜索模式：隐藏 hero（发布模块）+ 改两个 section 标题
+      const hero = document.querySelector('.hero');
+      if (hero) hero.style.display = 'none';
+      const featuredTitle = document.getElementById('featured-title');
+      const featuredSub = document.getElementById('featured-sub');
+      const latestTitle = document.getElementById('latest-title');
+      const latestSub = document.getElementById('latest-sub');
+      if (featuredTitle) featuredTitle.textContent = '相关清单';
+      if (featuredSub) featuredSub.textContent = `匹配"${initialQuery}"的清单`;
+      if (latestTitle) latestTitle.textContent = '相关内容';
+      if (latestSub) latestSub.textContent = `匹配"${initialQuery}"的内容`;
     }
     renderFeaturedLists(initialQuery);
     renderLatestItems(initialQuery);
